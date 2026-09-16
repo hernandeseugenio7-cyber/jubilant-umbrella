@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Macro-Terminal 20 Indicadores + Interpretador</title>
+    <title>Terminal Preditivo & Análise de Contraste de Mercado</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-main: #0b0e11;
-            --bg-card: #1e2329;
-            --bg-input: #2b313a;
+            --bg-main: #0a0d12;
+            --bg-card: #141821;
+            --bg-input: #1e2430;
+            --border: #2a3245;
             --text-main: #eaecef;
             --text-muted: #848e9c;
             --green: #0ecb81;
             --red: #f6465d;
             --yellow: #f0b90b;
             --blue: #3498db;
+            --purple: #9b59b6;
         }
 
         body {
@@ -30,57 +32,52 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #2b313a;
+            border-bottom: 1px solid var(--border);
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
 
-        .logo { font-size: 20px; font-weight: bold; color: var(--yellow); }
+        .logo { font-size: 20px; font-weight: bold; color: var(--yellow); letter-spacing: 1px; }
 
-        .metrics-grid {
+        .layout-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .metric-card {
-            background-color: var(--bg-card);
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #2b313a;
-        }
-
-        .metric-title { font-size: 10px; color: var(--text-muted); }
-        .metric-value { font-size: 16px; font-weight: bold; margin: 4px 0; }
-        .metric-status { font-size: 10px; font-weight: bold; }
-
-        .up { color: var(--green); }
-        .down { color: var(--red); }
-        .neutral { color: var(--yellow); }
-
-        .grid-main {
-            display: grid;
-            grid-template-columns: 320px 1fr;
+            grid-template-columns: 360px 1fr;
             gap: 20px;
         }
 
         .card {
             background-color: var(--bg-card);
             border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #2b313a;
-            margin-bottom: 15px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
         }
 
-        .input-group { margin-bottom: 12px; }
+        .card-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .input-group { margin-bottom: 10px; }
         label { display: block; color: var(--text-muted); font-size: 11px; margin-bottom: 4px; }
 
         input, select {
             width: 100%;
-            padding: 8px;
+            padding: 8px 10px;
             background: var(--bg-input);
-            border: 1px solid #474d57;
+            border: 1px solid var(--border);
             border-radius: 4px;
             color: var(--text-main);
             box-sizing: border-box;
@@ -89,293 +86,370 @@
 
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background-color: var(--yellow);
             color: #000;
             font-weight: bold;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-top: 5px;
+            font-size: 13px;
+            margin-top: 10px;
         }
 
-        .btn-file {
-            background-color: var(--blue);
-            color: #fff;
-        }
+        button:hover { opacity: 0.9; }
 
-        .interpreter-box {
-            background: rgba(52, 152, 219, 0.08);
-            border: 1px solid var(--blue);
+        /* Painéis de Previsão e Contraste */
+        .prediction-header {
+            background: rgba(240, 185, 11, 0.08);
+            border: 1px solid var(--yellow);
             border-radius: 8px;
             padding: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
-        .interpreter-title {
-            color: var(--blue); font-size: 13px; font-weight: bold; margin-bottom: 8px;
+        .scenario-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--yellow);
+            margin-bottom: 6px;
         }
 
-        .interpreter-content { font-size: 12px; line-height: 1.5; color: var(--text-main); }
-        .tag-scenario { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-bottom: 6px; }
+        .prediction-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
 
-        .selector-grid {
+        /* Tabela de Contraste de Impacto */
+        .contrast-container {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .contrast-box {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .contrast-box.negative { border-left: 4px solid var(--red); }
+        .contrast-box.positive { border-left: 4px solid var(--green); }
+
+        .contrast-header {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
             margin-bottom: 10px;
         }
 
-        .tab {
-            padding: 6px;
-            background: var(--bg-card);
-            border: 1px solid #2b313a;
-            color: var(--text-muted);
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 10px;
-            text-align: center;
+        .negative .contrast-header { color: var(--red); }
+        .positive .contrast-header { color: var(--green); }
+
+        .impact-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
         }
 
-        .tab.active { background: var(--yellow); color: #000; font-weight: bold; }
-        canvas { width: 100% !important; height: 280px !important; }
-        #fileInput { display: none; }
+        .impact-item:last-child { border-bottom: none; }
+
+        .impact-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .badge-red { background: rgba(246, 70, 93, 0.2); color: var(--red); }
+        .badge-green { background: rgba(14, 203, 129, 0.2); color: var(--green); }
+
+        .presets-btn {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .btn-preset {
+            padding: 6px;
+            font-size: 10px;
+            background: var(--bg-input);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-preset:hover { color: var(--text-main); border-color: var(--yellow); }
+
+        canvas { width: 100% !important; height: 260px !important; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="logo">🌐 MACRO-TERMINAL 20 INDICADORES</div>
-        <div style="color: var(--text-muted); font-size: 12px;">Simulador & Interpretador Econômico Completo</div>
+        <div class="logo">🔮 MACRO-PREDICTOR & IMPACT ENGINE</div>
+        <div style="color: var(--text-muted); font-size: 12px;">Interpretador Preditivo e Análise de Contraste de Mercado</div>
     </div>
 
-    <!-- 20 Indicadores em Grid -->
-    <div class="metrics-grid" id="metricsContainer"></div>
-
-    <div class="grid-main">
-        <!-- Controles -->
+    <div class="layout-grid">
+        <!-- Formulário de Entrada de Dados Reais -->
         <div>
             <div class="card">
-                <h4 style="margin-top:0;">Inserção Manual</h4>
-                <div class="input-group">
-                    <label>PRODUÇÃO TOTAL (Oferta)</label>
-                    <input type="number" id="producao" value="100">
+                <div class="card-title">Cenários Rápidos de Mercado</div>
+                <div class="presets-btn">
+                    <button class="btn-preset" onclick="carregarPreset('estagflacao')">Estagflação</button>
+                    <button class="btn-preset" onclick="carregarPreset('boom')">Boom Econômico</button>
+                    <button class="btn-preset" onclick="carregarPreset('recessao')">Crise de Crédito</button>
                 </div>
-                <div class="input-group">
-                    <label>DEMANDA TOTAL (Consumo)</label>
-                    <input type="number" id="demanda" value="100">
-                </div>
-                <button onclick="processarTurno()">Executar Turno</button>
-            </div>
 
-            <div class="card">
-                <h4 style="margin-top:0;">Importação de Lote</h4>
-                <label for="fileInput" class="tab btn-file" style="display:block; padding:10px;">
-                    📂 Carregar Histórico (JSON ou CSV)
-                </label>
-                <input type="file" id="fileInput" accept=".json, .csv" onchange="carregarArquivo(event)">
-                <p style="font-size:10px; color:var(--text-muted); margin-top:8px;">
-                    Formato JSON aceito: <code>[{"producao": 100, "demanda": 110}, ...]</code>
-                </p>
+                <div class="card-title">Dados Macroeconômicos Reais</div>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>Inflação CPI (%)</label>
+                        <input type="number" id="inflacao" value="8.5" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Taxa de Juros (%)</label>
+                        <input type="number" id="juros" value="12.0" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Crescimento PIB (%)</label>
+                        <input type="number" id="pib" value="0.2" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Desemprego (%)</label>
+                        <input type="number" id="desemprego" value="9.5" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Câmbio (Var % Moeda)</label>
+                        <input type="number" id="cambio" value="-12.0" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Commodities (Var %)</label>
+                        <input type="number" id="commodities" value="25.0" step="0.1">
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Dívida Pública (% PIB)</label>
+                        <input type="number" id="divida" value="88.0" step="0.1">
+                    </div>
+                </div>
+
+                <button onclick="executarPredicao()">GERAR PREVISÃO E ANÁLISE</button>
             </div>
         </div>
 
-        <!-- Interpretador e Gráfico -->
+        <!-- Painel Central: Previsão Preditiva + Análise de Contraste -->
         <div>
-            <div class="interpreter-box">
-                <div class="interpreter-title">🔍 DIAGNÓSTICO DO INTERPRETADOR</div>
-                <div id="tagCenario" class="tag-scenario" style="background: rgba(240,185,11,0.2); color: var(--yellow);">
-                    EQUILÍBRIO INICIAL
-                </div>
-                <div class="interpreter-content" id="textoInterpretacao">
-                    Aguardando inserção de dados. O sistema monitora as interações das 20 variáveis.
+            <!-- Diagnóstico Preditivo -->
+            <div class="prediction-header">
+                <div class="scenario-title" id="previsaoCenario">PROCESSANDO DADOS MACRO...</div>
+                <div class="prediction-text" id="previsaoDescricao">
+                    Preencha os indicadores reais ou selecione um cenário rápido para acionar o motor preditivo.
                 </div>
             </div>
 
+            <!-- Análise de Contraste: Onde o impacto é mais significativo -->
+            <div class="contrast-container">
+                <div class="contrast-box negative">
+                    <div class="contrast-header">⚠️ Maior Impacto Negativo (Perdedores)</div>
+                    <div id="listaNegativos"></div>
+                </div>
+                <div class="contrast-box positive">
+                    <div class="contrast-header">🚀 Maior Impacto Positivo (Ganhadores)</div>
+                    <div id="listaPositivos"></div>
+                </div>
+            </div>
+
+            <!-- Gráfico de Trajetória Projeta (Próximos Trimestres) -->
             <div class="card">
-                <div class="selector-grid" id="tabsContainer"></div>
-                <canvas id="chartExchange"></canvas>
+                <div class="card-title">Projeção Preditiva de Tendência (Próximos 4 Trimestres)</div>
+                <canvas id="chartPredicao"></canvas>
             </div>
         </div>
     </div>
 
     <script>
-        // Definição dos 20 Indicadores Econômicos
-        const indicadores = {
-            cpi: { nome: 'Inflação (CPI)', unit: '%', val: 3.0, historico: [3.0] },
-            ppi: { nome: 'Inflação Produtor (PPI)', unit: '%', val: 2.5, historico: [2.5] },
-            juros: { nome: 'Taxa de Juros (Selic)', unit: '%', val: 5.0, historico: [5.0] },
-            desemprego: { nome: 'Desemprego', unit: '%', val: 8.0, historico: [8.0] },
-            pib: { nome: 'PIB Real (GDP)', unit: '$', val: 1000, historico: [1000] },
-            moeda: { nome: 'Base Currency Index', unit: 'pts', val: 100.0, historico: [100.0] },
-            m2: { nome: 'Oferta Monetária (M2)', unit: 'B$', val: 500, historico: [500] },
-            prodInd: { nome: 'Produção Industrial', unit: 'pts', val: 100, historico: [100] },
-            varejo: { nome: 'Vendas no Varejo', unit: 'pts', val: 100, historico: [100] },
-            uci: { nome: 'Capacidade Inst. (UCI)', unit: '%', val: 78, historico: [78] },
-            confCons: { nome: 'Confiança Consumidor', unit: 'pts', val: 100, historico: [100] },
-            confEmp: { nome: 'Confiança Empresarial', unit: 'pts', val: 100, historico: [100] },
-            inadimplencia: { nome: 'Inadimplência', unit: '%', val: 3.5, historico: [3.5] },
-            credito: { nome: 'Volume de Crédito', unit: 'B$', val: 300, historico: [300] },
-            balanca: { nome: 'Balança Comercial', unit: 'M$', val: 50, historico: [50] },
-            reservas: { nome: 'Reservas Internac.', unit: 'B$', val: 350, historico: [350] },
-            divida: { nome: 'Dívida Pública / PIB', unit: '%', val: 75.0, historico: [75.0] },
-            deficit: { nome: 'Déficit Fiscal', unit: 'B$', val: -20, historico: [-20] },
-            cds: { nome: 'Risco-País (CDS)', unit: 'bps', val: 200, historico: [200] },
-            payroll: { nome: 'Criação de Empregos', unit: 'k', val: 15, historico: [15] }
-        };
-
-        const labels = ['T0'];
-        let indicadorAtivo = 'cpi';
-        let turnos = 0;
-
-        // Renderiza os Cards e as Abas
-        function inicializarUI() {
-            const metricsContainer = document.getElementById('metricsContainer');
-            const tabsContainer = document.getElementById('tabsContainer');
-            metricsContainer.innerHTML = '';
-            tabsContainer.innerHTML = '';
-
-            Object.keys(indicadores).forEach(key => {
-                const ind = indicadores[key];
-                metricsContainer.innerHTML += `
-                    <div class="metric-card">
-                        <div class="metric-title">${ind.nome.toUpperCase()}</div>
-                        <div class="metric-value" id="val-${key}">${ind.val}${ind.unit}</div>
-                        <div class="metric-status neutral" id="st-${key}">Estável</div>
-                    </div>
-                `;
-                tabsContainer.innerHTML += `
-                    <button class="tab ${key === indicadorAtivo ? 'active' : ''}" onclick="selecionarIndicador('${key}', this)">
-                        ${ind.nome}
-                    </button>
-                `;
-            });
-        }
-
-        // Gráfico Principal
-        const ctx = document.getElementById('chartExchange').getContext('2d');
+        // Inicialização do Gráfico Preditivo
+        const ctx = document.getElementById('chartPredicao').getContext('2d');
         const grafico = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
-                datasets: [{
-                    label: indicadores[indicadorAtivo].nome,
-                    data: indicadores[indicadorAtivo].historico,
-                    borderColor: '#f0b90b',
-                    backgroundColor: 'rgba(240, 185, 11, 0.1)',
-                    borderWidth: 2, fill: true, tension: 0.2
-                }]
+                labels: ['Atual', 'T+1 Trimestre', 'T+2 Trimestres', 'T+3 Trimestres', 'T+4 Trimestres'],
+                datasets: [
+                    { label: 'Lucro Corporativo Projetado', data: [100, 95, 88, 82, 85], borderColor: '#f6465d', borderWidth: 2, fill: false },
+                    { label: 'Custo do Crédito / Inadimplência', data: [100, 115, 130, 142, 140], borderColor: '#f0b90b', borderWidth: 2, fill: false },
+                    { label: 'Poder de Compra Real', data: [100, 92, 85, 80, 81], borderColor: '#3498db', borderWidth: 2, fill: false }
+                ]
             },
             options: {
                 responsive: true,
                 plugins: { legend: { labels: { color: '#eaecef' } } },
                 scales: {
-                    x: { grid: { color: '#2b313a' }, ticks: { color: '#848e9c' } },
-                    y: { grid: { color: '#2b313a' }, ticks: { color: '#848e9c' } }
+                    x: { grid: { color: '#2a3245' }, ticks: { color: '#848e9c' } },
+                    y: { grid: { color: '#2a3245' }, ticks: { color: '#848e9c' } }
                 }
             }
         });
 
-        function processarTurno(prodManual = null, demManual = null) {
-            const prod = prodManual !== null ? prodManual : parseFloat(document.getElementById('producao').value) || 0;
-            const dem = demManual !== null ? demManual : parseFloat(document.getElementById('demanda').value) || 0;
+        // Motor de Inteligência Preditiva e Contraste
+        function executarPredicao() {
+            const inf = parseFloat(document.getElementById('inflacao').value) || 0;
+            const jur = parseFloat(document.getElementById('juros').value) || 0;
+            const pib = parseFloat(document.getElementById('pib').value) || 0;
+            const des = parseFloat(document.getElementById('desemprego').value) || 0;
+            const cam = parseFloat(document.getElementById('cambio').value) || 0;
+            const com = parseFloat(document.getElementById('commodities').value) || 0;
+            const div = parseFloat(document.getElementById('divida').value) || 0;
 
-            const gap = dem - prod;
+            const elCenario = document.getElementById('previsaoCenario');
+            const elDesc = document.getElementById('previsaoDescricao');
+            const elNeg = document.getElementById('listaNegativos');
+            const elPos = document.getElementById('listaPositivos');
 
-            // Recálculo Encadeado dos 20 Indicadores
-            indicadores.cpi.val = Math.max(0, indicadores.cpi.val + gap * 0.05);
-            indicadores.ppi.val = Math.max(0, indicadores.ppi.val + gap * 0.04);
-            indicadores.juros.val = Math.max(0.5, indicadores.juros.val + (indicadores.cpi.val > 4.0 ? 0.3 : -0.1));
-            indicadores.desemprego.val = Math.max(2.0, indicadores.desemprego.val - gap * 0.03);
-            indicadores.pib.val = Math.max(100, indicadores.pib.val + dem * 0.5 - (prod > dem ? (prod - dem) * 0.4 : 0));
-            indicadores.moeda.val = Math.max(10, indicadores.moeda.val + indicadores.juros.val * 0.3 - indicadores.cpi.val * 0.2);
-            indicadores.m2.val = Math.max(100, indicadores.m2.val + gap * 0.2);
-            indicadores.prodInd.val = Math.max(10, indicadores.prodInd.val + prod * 0.1 - 10);
-            indicadores.varejo.val = Math.max(10, indicadores.varejo.val + dem * 0.1 - 10);
-            indicadores.uci.val = Math.min(100, Math.max(30, 70 + gap * 0.2));
-            indicadores.confCons.val = Math.max(10, indicadores.confCons.val - indicadores.cpi.val * 0.5 + (gap > 0 ? 2 : -2));
-            indicadores.confEmp.val = Math.max(10, indicadores.confEmp.val + (gap > 0 ? 3 : -3));
-            indicadores.inadimplencia.val = Math.max(0.5, indicadores.inadimplencia.val + indicadores.juros.val * 0.1);
-            indicadores.credito.val = Math.max(50, indicadores.credito.val + (indicadores.juros.val < 6 ? 10 : -10));
-            indicadores.balanca.val = indicadores.balanca.val - gap * 0.2; // Escassez força importação
-            indicadores.reservas.val = Math.max(50, indicadores.reservas.val + indicadores.balanca.val * 0.05);
-            indicadores.divida.val = Math.max(20, indicadores.divida.val + (indicadores.juros.val > 6 ? 0.5 : -0.2));
-            indicadores.deficit.val = indicadores.deficit.val + (gap < 0 ? -2 : 1);
-            indicadores.cds.val = Math.max(50, indicadores.cds.val + indicadores.divida.val * 0.1 - indicadores.pib.val * 0.01);
-            indicadores.payroll.val = Math.max(-50, (gap * 1.5).toFixed(0));
+            let cenarioText = "";
+            let descText = "";
+            let negativos = [];
+            let positivos = [];
 
-            turnos++;
-            labels.push('T' + turnos);
+            // Regra 1: Estagflação (Inflação alta + PIB fraco)
+            if (inf > 6.0 && pib < 1.5) {
+                cenarioText = "🚨 PREVISÃO: ESTAGFLAÇÃO E APERTO DE MARGENS";
+                descText = `A combinação de inflação elevada (<b>${inf}%</b>) com PIB estagnado (<b>${pib}%</b>) cria o pior cenário macroeconômico. As empresas perderão margem de lucro por não conseguirem repassar custos a consumidores com poder de compra corroído. Espera-se onda de renegociação de dívidas e queda forte nos investimentos de longo prazo.`;
 
-            // Atualiza Históricos e Interface
-            Object.keys(indicadores).forEach(key => {
-                const ind = indicadores[key];
-                ind.historico.push(parseFloat(ind.val.toFixed(2)));
-                const prev = ind.historico[ind.historico.length - 2];
+                negativos = [
+                    { setor: "Construção Civil & Imobiliário", motivo: "Financiamento inviável por Juros altos", impacto: "-35%" },
+                    { setor: "Varejo Discrecionário (Eletro/Moda)", motivo: "Renda corroída pela Inflação", impacto: "-28%" },
+                    { setor: "Empresas Altamente Endividadas", motivo: "Custo de serviço da dívida explodindo", impacto: "-40%" }
+                ];
+                positivos = [
+                    { setor: "Renda Fixa Pós-Fixada / T-Bills", motivo: "Aproveita os Juros reais de " + (jur - inf).toFixed(1) + "%", impacto: "+18%" },
+                    { setor: "Exportadores de Commodities", motivo: "Beneficiados pela alta global de " + com + "%", impacto: "+22%" },
+                    { setor: "Setor de Energia e Utilidades", motivo: "Demanda inelástica e repasse tarifário", impacto: "+12%" }
+                ];
 
-                document.getElementById(`val-${key}`).innerText = `${ind.val.toFixed(1)}${ind.unit}`;
-                const elSt = document.getElementById(`st-${key}`);
-                if (ind.val > prev) { elSt.innerText = '▲ Subiu'; elSt.className = 'metric-status up'; }
-                else if (ind.val < prev) { elSt.innerText = '▼ Desceu'; elSt.className = 'metric-status down'; }
-                else { elSt.innerText = '= Mantido'; elSt.className = 'metric-status neutral'; }
-            });
-
-            interpretarAnalise(prod, dem, gap);
-            grafico.update();
-        }
-
-        function interpretarAnalise(prod, dem, gap) {
-            const elTexto = document.getElementById('textoInterpretacao');
-            const elTag = document.getElementById('tagCenario');
-
-            if (gap > 0) {
-                elTag.innerText = "SOBREAQUECIMENTO DA DEMANDA";
-                elTag.style.background = "rgba(246, 70, 93, 0.2)"; elTag.style.color = "#f6465d";
-                elTexto.innerHTML = `A demanda supera a produção. A <b>Inflação (CPI)</b> e a <b>Utilização de Capacidade (UCI)</b> subiram. O desemprego caiu para <b>${indicadores.desemprego.val.toFixed(1)}%</b>, empurrando o Banco Central a elevar a taxa de juros para conter a economia.`;
-            } else if (gap < 0) {
-                elTag.innerText = "EXCESSO DE OFERTA / RETRAÇÃO";
-                elTag.style.background = "rgba(52, 152, 219, 0.2)"; elTag.style.color = "#3498db";
-                elTexto.innerHTML = `Excesso de produtos encalhados no mercado. A <b>Produção Industrial</b> desacelerou e o <b>Desemprego subiu para ${indicadores.desemprego.val.toFixed(1)}%</b>. O Risco-País (CDS) oscila enquanto a confiança empresarial cai.`;
-            } else {
-                elTag.innerText = "EQUILÍBRIO PERFEITO";
-                elTag.style.background = "rgba(14, 203, 129, 0.2)"; elTag.style.color = "#0ecb81";
-                elTexto.innerHTML = `Oferta e demanda alinhadas. Balança comercial e taxa de câmbio estão sob controle sem pressões inflacionárias ou desemprego acelerado.`;
+                atualizarGraficoProjecao([100, 85, 72, 65, 68], [100, 120, 145, 160, 155], [100, 90, 80, 72, 74]);
             }
+            // Regra 2: Boom de Crescimento com Liquidez
+            else if (pib >= 3.0 && inf < 5.0 && jur < 8.0) {
+                cenarioText = "🚀 PREVISÃO: EXPANSÃO ECONÔMICA E RALLY DE ATIVOS";
+                descText = `Economia em forte ritmo de expansão com PIB de <b>${pib}%</b> e inflação ancorada. O custo de capital reduzido impulsionará a tomada de crédito, expansão fabril e consumo das famílias. Excelente ambiente para ativos de risco.`;
+
+                negativos = [
+                    { setor: "Caixa / Títulos Públicos Curtos", motivo: "Rendimento caindo com cortes de juros", impacto: "-12%" },
+                    { setor: "Ativos Estritamente Defensivos", motivo: "Rotação de capital para ativos de crescimento", impacto: "-15%" }
+                ];
+                positivos = [
+                    { setor: "Bolsa de Valores (Ações / Growth)", motivo: "Expansão de múltiplos e lucros crescentes", impacto: "+45%" },
+                    { setor: "Setor Imobiliário & Shoppings", motivo: "Crédito barato e demanda aquecida", impacto: "+30%" },
+                    { setor: "Varejo e Bens de Consumo", motivo: "Desemprego baixo (" + des + "%) eleva massa salarial", impacto: "+28%" }
+                ];
+
+                atualizarGraficoProjecao([100, 115, 132, 150, 165], [100, 92, 85, 80, 78], [100, 108, 118, 125, 130]);
+            }
+            // Regra 3: Crise de Crédito / Recessão
+            else if (jur > 10.0 || pib < 0) {
+                cenarioText = "📉 PREVISÃO: RECESSÃO TÉCNICA E RESTRICAÇÃO DE CRÉDITO";
+                descText = `A taxa de juros em <b>${jur}%</b> estrangula a atividade produtiva. Os bancos fecharão as linhas de crédito devido ao aumento do risco de inadimplência. As famílias priorizarão pagamento de dívidas em detrimento do consumo.`;
+
+                negativos = [
+                    { setor: "Setor Bancário (Médios/Pequenos)", motivo: "Explosão de inadimplência corporativa", impacto: "-30%" },
+                    { setor: "Indústria Automotiva e Bens Duráveis", motivo: "Dependência severa de financiamento", impacto: "-32%" },
+                    { setor: "Mercado de Trabalho (Payroll)", motivo: "Demissões para corte de custos fixos", impacto: "-20%" }
+                ];
+                positivos = [
+                    { setor: "Títulos de Longa Duração (Prefixados)", motivo: "Ganho de capital na futura queda de juros", impacto: "+25%" },
+                    { setor: "Dólar / Moedas de Proteção", motivo: "Fuga de capital estrangeiro para segurança", impacto: "+18%" }
+                ];
+
+                atualizarGraficoProjecao([100, 88, 76, 70, 75], [100, 125, 150, 158, 145], [100, 93, 86, 82, 85]);
+            }
+            // Regra Padrão: Transição Neutra
+            else {
+                cenarioText = "⚖️ PREVISÃO: CICLO DE TRANSIÇÃO E REAJUSTE";
+                descText = `A economia opera em fase de ajuste. Com juros em <b>${jur}%</b> e inflação em <b>${inf}%</b>, o mercado busca equilíbrio entre a contenção de preços e o suporte ao PIB.`;
+
+                negativos = [
+                    { setor: "Empresas com Alta Alavancagem", motivo: "Despesa financeira ainda elevada", impacto: "-12%" }
+                ];
+                positivos = [
+                    { setor: "Empresas Pagadoras de Dividendos", motivo: "Proteção de fluxo de caixa estável", impacto: "+10%" }
+                ];
+
+                atualizarGraficoProjecao([100, 102, 105, 107, 110], [100, 101, 100, 98, 97], [100, 101, 102, 103, 104]);
+            }
+
+            elCenario.innerText = cenarioText;
+            elDesc.innerHTML = descText;
+
+            // Renderizar Lista de Impactos Negativos em Contraste
+            elNeg.innerHTML = negativos.map(item => `
+                <div class="impact-item">
+                    <div>
+                        <b>${item.setor}</b>
+                        <div style="color:var(--text-muted); font-size:10px;">${item.motivo}</div>
+                    </div>
+                    <span class="impact-badge badge-red">${item.impacto}</span>
+                </div>
+            `).join('');
+
+            // Renderizar Lista de Impactos Positivos em Contraste
+            elPos.innerHTML = positivos.map(item => `
+                <div class="impact-item">
+                    <div>
+                        <b>${item.setor}</b>
+                        <div style="color:var(--text-muted); font-size:10px;">${item.motivo}</div>
+                    </div>
+                    <span class="impact-badge badge-green">${item.impacto}</span>
+                </div>
+            `).join('');
         }
 
-        // Leitura de Arquivo JSON ou CSV
-        function carregarArquivo(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                if (file.name.endsWith('.json')) {
-                    const dados = JSON.parse(content);
-                    dados.forEach(item => processarTurno(item.producao, item.demanda));
-                } else if (file.name.endsWith('.csv')) {
-                    const linhas = content.split('\n').slice(1);
-                    linhas.forEach(linha => {
-                        const [prod, dem] = linha.split(',');
-                        if (prod && dem) processarTurno(parseFloat(prod), parseFloat(dem));
-                    });
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function selecionarIndicador(key, btn) {
-            indicadorAtivo = key;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            btn.classList.add('active');
-
-            grafico.data.datasets[0].label = indicadores[key].nome;
-            grafico.data.datasets[0].data = indicadores[key].historico;
+        function atualizarGraficoProjecao(lucros, credito, poderCompra) {
+            grafico.data.datasets[0].data = lucros;
+            grafico.data.datasets[1].data = credito;
+            grafico.data.datasets[2].data = poderCompra;
             grafico.update();
         }
 
-        inicializarUI();
+        function carregarPreset(tipo) {
+            if (tipo === 'estagflacao') {
+                document.getElementById('inflacao').value = 9.8;
+                document.getElementById('juros').value = 13.75;
+                document.getElementById('pib').value = 0.1;
+                document.getElementById('desemprego').value = 11.2;
+                document.getElementById('cambio').value = -15.0;
+                document.getElementById('commodities').value = 30.0;
+                document.getElementById('divida').value = 92.0;
+            } else if (tipo === 'boom') {
+                document.getElementById('inflacao').value = 3.2;
+                document.getElementById('juros').value = 6.0;
+                document.getElementById('pib').value = 4.2;
+                document.getElementById('desemprego').value = 4.8;
+                document.getElementById('cambio').value = 8.0;
+                document.getElementById('commodities').value = 5.0;
+                document.getElementById('divida').value = 65.0;
+            } else if (tipo === 'recessao') {
+                document.getElementById('inflacao').value = 4.0;
+                document.getElementById('juros').value = 14.0;
+                document.getElementById('pib').value = -1.5;
+                document.getElementById('desemprego').value = 12.5;
+                document.getElementById('cambio').value = -8.0;
+                document.getElementById('commodities').value = -10.0;
+                document.getElementById('divida').value = 85.0;
+            }
+            executarPredicao();
+        }
+
+        // Executa na inicialização
+        executarPredicao();
     </script>
 </body>
 </html>
