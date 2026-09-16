@@ -1,442 +1,502 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Interpretador de Mercados & Indicadores</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-main: #0a0d12;
-            --bg-card: #141821;
-            --bg-input: #1e2430;
-            --border: #2a3245;
-            --text-main: #eaecef;
-            --text-muted: #848e9c;
-            --green: #0ecb81;
-            --red: #f6465d;
-            --yellow: #f0b90b;
-            --blue: #3498db;
-            --orange: #e67e22;
-            --purple: #9b59b6;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terminal Macro & Engine Preditivo de Mercado</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-main: #0a0d12;
+      --bg-card: #141821;
+      --bg-input: #1e2430;
+      --border: #2a3245;
+      --text-main: #eaecef;
+      --text-muted: #848e9c;
+      --accent-blue: #38bdf8;
+      --accent-green: #0ecb81;
+      --accent-red: #f6465d;
+      --accent-yellow: #f0b90b;
+      --accent-purple: #a855f7;
+    }
 
-        body {
-            font-family: 'Segoe UI', Inter, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-main); color: var(--text-main); padding: 20px; line-height: 1.5; }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .logo { font-size: 1.2rem; font-weight: bold; color: var(--accent-yellow); letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+    .badge { background: #0284c7; color: #fff; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; font-weight: 600; text-transform: uppercase; }
 
-        .logo { font-size: 20px; font-weight: bold; color: var(--yellow); letter-spacing: 1px; }
+    .layout-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; }
+    @media (max-width: 1080px) { .layout-grid { grid-template-columns: 1fr; } }
 
-        .layout-grid {
-            display: grid;
-            grid-template-columns: 340px 1fr;
-            gap: 20px;
-        }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 20px; }
+    .card-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 14px; color: var(--text-muted); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
 
-        .card {
-            background-color: var(--bg-card);
-            border-radius: 8px;
-            padding: 18px;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
+    /* Controles do Analista */
+    .human-panel { border: 1px solid var(--accent-yellow); background: rgba(240, 185, 11, 0.03); }
+    .human-panel label, .input-group label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; display: block; margin-top: 8px; margin-bottom: 4px; }
+    select, input, textarea { width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; font-size: 0.85rem; }
+    
+    .presets-btn { display: flex; gap: 6px; margin-bottom: 12px; }
+    .btn-preset { padding: 6px; font-size: 0.75rem; background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; width: 100%; font-weight: 600; }
+    .btn-preset:hover { color: var(--text-main); border-color: var(--accent-yellow); }
 
-        .card-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 15px;
-        }
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    
+    button.btn-main { width: 100%; padding: 12px; background-color: var(--accent-yellow); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-top: 15px; }
+    button.btn-main:hover { opacity: 0.9; }
 
-        .input-group { margin-bottom: 15px; }
-        label { display: block; color: var(--text-muted); font-size: 12px; margin-bottom: 6px; }
+    /* Caixa de Alerta / Escalada */
+    .escalation-box { background: rgba(246, 70, 93, 0.12); border: 1px solid var(--accent-red); padding: 14px; border-radius: 6px; color: #fca5a5; font-size: 0.85rem; margin-bottom: 20px; display: none; }
+    .escalation-box.active { display: block; }
+    .escalation-box strong { color: var(--accent-red); }
 
-        input, select {
-            width: 100%;
-            padding: 10px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            color: var(--text-main);
-            box-sizing: border-box;
-            font-size: 14px;
-        }
+    /* Painel Preditivo */
+    .prediction-header { background: rgba(240, 185, 11, 0.08); border: 1px solid var(--accent-yellow); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+    .scenario-title { font-size: 1rem; font-weight: bold; color: var(--accent-yellow); margin-bottom: 6px; }
+    .prediction-text { font-size: 0.85rem; line-height: 1.6; color: var(--text-main); }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--yellow);
-            color: #000;
-            font-weight: bold;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            margin-top: 5px;
-        }
+    /* Grupos de Métricas / Interpretação */
+    .metric-group { margin-bottom: 14px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 6px; border-left: 4px solid var(--accent-blue); }
+    .metric-group.fed { border-left-color: var(--accent-purple); }
+    .metric-group.investor { border-left-color: var(--accent-green); }
+    .metric-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; color: #fff; }
+    .metric-desc { font-size: 0.85rem; color: var(--text-muted); }
 
-        button:hover { opacity: 0.9; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .tag-hawkish { background: rgba(246, 70, 93, 0.2); color: var(--accent-red); }
+    .tag-dovish { background: rgba(14, 203, 129, 0.2); color: var(--accent-green); }
+    .tag-neutral { background: rgba(132, 142, 156, 0.2); color: var(--text-muted); }
 
-        /* Resumo dos Indicadores */
-        .indicators-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+    /* Tabelas e Contraste */
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 8px; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; }
 
-        .ind-chip {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            padding: 8px 10px;
-            border-radius: 6px;
-        }
+    .contrast-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    @media (max-width: 768px) { .contrast-container { grid-template-columns: 1fr; } }
+    .contrast-box { background: var(--bg-card); border-radius: 8px; padding: 15px; border: 1px solid var(--border); }
+    .contrast-box.negative { border-left: 4px solid var(--accent-red); }
+    .contrast-box.positive { border-left: 4px solid var(--accent-green); }
+    .contrast-header { font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+    .negative .contrast-header { color: var(--accent-red); }
+    .positive .contrast-header { color: var(--accent-green); }
 
-        .ind-chip-title { font-size: 10px; color: var(--text-muted); }
-        .ind-chip-val { font-size: 15px; font-weight: bold; margin-top: 2px; }
+    .impact-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; }
+    .impact-item:last-child { border-bottom: none; }
+    .impact-badge { padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 0.7rem; }
+    .badge-red { background: rgba(246, 70, 93, 0.2); color: var(--accent-red); }
+    .badge-green { background: rgba(14, 203, 129, 0.2); color: var(--accent-green); }
 
-        /* Painel Preditivo */
-        .prediction-header {
-            background: rgba(240, 185, 11, 0.08);
-            border: 1px solid var(--yellow);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .scenario-title { font-size: 16px; font-weight: bold; color: var(--yellow); margin-bottom: 6px; }
-        .prediction-text { font-size: 13px; line-height: 1.6; color: var(--text-main); }
-
-        /* Contraste */
-        .contrast-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .contrast-box {
-            background: var(--bg-card);
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid var(--border);
-        }
-
-        .contrast-box.negative { border-left: 4px solid var(--red); }
-        .contrast-box.positive { border-left: 4px solid var(--green); }
-
-        .contrast-header { font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
-        .negative .contrast-header { color: var(--red); }
-        .positive .contrast-header { color: var(--green); }
-
-        .impact-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 12px;
-        }
-
-        .impact-badge { padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 10px; }
-        .badge-red { background: rgba(246, 70, 93, 0.2); color: var(--red); }
-        .badge-green { background: rgba(14, 203, 129, 0.2); color: var(--green); }
-
-        canvas { width: 100% !important; height: 280px !important; }
-    </style>
+    canvas { width: 100% !important; height: 260px !important; }
+  </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="logo">🔮 INTERPRETADOR PREDITIVO DE MERCADOS</div>
-        <div style="color: var(--text-muted); font-size: 12px;">Análise de Impacto em Mercados e Commodities</div>
-    </div>
+  <header>
+    <div class="logo">🔮 TERMINAL MACRO & ENGINE PREDITIVO <span class="badge">Hybrid Human-in-Loop</span></div>
+    <div style="font-size: 0.8rem; color: var(--text-muted);">Decisão de Política Monetária & Análise de Impacto</div>
+  </header>
 
-    <!-- Exibição dos Dados Atuais dos Indicadores -->
-    <div class="indicators-summary" id="resumoIndicadores"></div>
+  <!-- Caixa de Alerta para Conflitos Macro -->
+  <div id="escalationBox" class="escalation-box">
+    <strong>⚠️ REQUER INTERVENÇÃO DO ANALISTA:</strong> <span id="escalationReason"></span>
+  </div>
 
-    <div class="layout-grid">
-        <!-- Entrada de Dados do Utilizador -->
-        <div class="card">
-            <div class="card-title">Inserção de Dados pelo Utilizador</div>
-            
-            <div class="input-group">
-                <label for="selectIndicador">Selecione o Indicador:</label>
-                <select id="selectIndicador" onchange="carregarValorParaEdicao()">
-                    <option value="inflacao">Inflação CPI (%)</option>
-                    <option value="juros">Taxa de Juros (%)</option>
-                    <option value="pib">Crescimento do PIB (%)</option>
-                    <option value="desemprego">Taxa de Desemprego (%)</option>
-                    <option value="cambio">Variação do Câmbio (%)</option>
-                    <option value="commodities">Variação de Commodities (%)</option>
-                    <option value="divida">Dívida Pública (% PIB)</option>
-                </select>
-            </div>
-
-            <!-- Campo solicitado: "Insira o valor" -->
-            <div class="input-group">
-                <label for="valorInput">Insira o valor:</label>
-                <input type="number" id="valorInput" placeholder="Digite o valor..." step="0.1">
-            </div>
-
-            <button onclick="atualizarEAnalisar()">ATUALIZAR INDICADOR & ANALISAR</button>
+  <div class="layout-grid">
+    
+    <!-- COLUNA DA ESQUERDA: Formatos de Entrada -->
+    <div>
+      <!-- CENÁRIOS RÁPIDOS & SOBREPOSIÇÃO HUMANA -->
+      <div class="card human-panel">
+        <div class="card-title" style="color: var(--accent-yellow);">
+          🛠️ Painel de Controle e Calibração
+        </div>
+        
+        <label>Cenários Rápidos de Mercado</label>
+        <div class="presets-btn">
+          <button class="btn-preset" onclick="carregarPreset('estagflacao')">Estagflação</button>
+          <button class="btn-preset" onclick="carregarPreset('boom')">Boom Econômico</button>
+          <button class="btn-preset" onclick="carregarPreset('recessao')">Crise / Recessão</button>
         </div>
 
-        <!-- Painel de Diagnóstico Preditivo e Contraste -->
-        <div>
-            <div class="prediction-header">
-                <div class="scenario-title" id="tituloCenario">DIAGNÓSTICO DE MERCADO</div>
-                <div class="prediction-text" id="textoInterpretacao">
-                    Insira os dados no campo ao lado para calcular as projeções dos mercados.
-                </div>
-            </div>
+        <label for="macroRegime">Regime Macro Ativo (Curado pelo Analista)</label>
+        <select id="macroRegime" onchange="executarAnaliseCompleta()">
+          <option value="inflation">Regime 1: Foco no Controle da Inflação (Fed Hawkish)</option>
+          <option value="recession">Regime 2: Preocupação com Crescimento/Recessão (Fed Dovish)</option>
+          <option value="goldilocks" selected>Regime 3: Pouso Suave / Goldilocks (Mandato Duplo Equilibrado)</option>
+        </select>
 
-            <div class="contrast-container">
-                <div class="contrast-box negative">
-                    <div class="contrast-header">⚠️ Mercados com Impacto Negativo (Queda)</div>
-                    <div id="listaNegativos"></div>
-                </div>
-                <div class="contrast-box positive">
-                    <div class="contrast-header">🚀 Mercados com Impacto Positivo (Alta)</div>
-                    <div id="listaPositivos"></div>
-                </div>
-            </div>
+        <label for="fedTone">Tom das Comunicações do Fed ("Fed Speak")</label>
+        <select id="fedTone" onchange="executarAnaliseCompleta()">
+          <option value="hawkish">Hawkish ("Juros altos por mais tempo" / Ameaça de altas)</option>
+          <option value="neutral" selected>Neutro / Dependente de Dados</option>
+          <option value="dovish">Dovish (Sinalização de cortes / Afrouxamento)</option>
+        </select>
 
-            <!-- Gráfico com Mercados Afetados (Ouro, Brent, Bolsa, Imóveis, Títulos) -->
-            <div class="card">
-                <div class="card-title">Projeção Preditiva dos Mercados Afetados (Próximos 4 Trimestres)</div>
-                <canvas id="chartPredicaoMercados"></canvas>
-            </div>
+        <label for="humanNotes">Notas / Sobreposição Manual do Analista</label>
+        <textarea id="humanNotes" rows="2" placeholder="Ex: Distorções climáticas afetando Payroll; ignorando núcleo atípico do CPI..." oninput="executarAnaliseCompleta()"></textarea>
+      </div>
+
+      <!-- DADOS QUANTITATIVOS E INDICADORES -->
+      <div class="card">
+        <div class="card-title">📊 Alimentação de Dados Econômicos</div>
+
+        <div class="input-grid">
+          <div class="input-group">
+            <label>CPI Inflação (%)</label>
+            <input type="number" id="inflacao" value="8.5" step="0.1" onchange="executarAnaliseCompleta()">
+          </div>
+          <div class="input-group">
+            <label>Taxa de Juros (%)</label>
+            <input type="number" id="juros" value="12.0" step="0.1" onchange="executarAnaliseCompleta()">
+          </div>
+          <div class="input-group">
+            <label>Crescimento PIB (%)</label>
+            <input type="number" id="pib" value="0.2" step="0.1" onchange="executarAnaliseCompleta()">
+          </div>
+          <div class="input-group">
+            <label>Desemprego (%)</label>
+            <input type="number" id="desemprego" value="9.5" step="0.1" onchange="executarAnaliseCompleta()">
+          </div>
+          <div class="input-group">
+            <label>Câmbio (Var % Moeda)</label>
+            <input type="number" id="cambio" value="-12.0" step="0.1" onchange="executarAnaliseCompleta()">
+          </div>
+          <div class="input-group">
+            <label>Commodities (Var %)</label>
+            <input type="number" id="commodities" value="25.0" step="0.1" onchange="executarAnaliseCompleta()">
+          </div>
         </div>
+
+        <div style="margin-top: 15px;">
+          <label style="font-weight: bold; color: var(--text-main); font-size: 0.8rem;">Tendências Qualitativas dos Indicadores</label>
+          <table>
+            <thead>
+              <tr>
+                <th>Indicador</th>
+                <th>Sinal Observado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Curva de Juros 10Y-2Y</strong></td>
+                <td>
+                  <select id="ind_yield" onchange="executarAnaliseCompleta()">
+                    <option value="inverted">Invertida (Alerta Recessão)</option>
+                    <option value="steepening" selected>Desinvertendo / Normalizando</option>
+                    <option value="flat">Flat (Flat/Inclinada)</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Pedidos de Auxílio Desemprego</strong></td>
+                <td>
+                  <select id="ind_claims" onchange="executarAnaliseCompleta()">
+                    <option value="cool">Baixo / Mercado Aquecido (&lt; 220k)</option>
+                    <option value="hot" selected>Elevado / Fraqueza (&gt; 250k)</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Nonfarm Payrolls (NFP)</strong></td>
+                <td>
+                  <select id="ind_nfp" onchange="executarAnaliseCompleta()">
+                    <option value="hot" selected>Forte (&gt; 200k)</option>
+                    <option value="cool">Fraco (&lt; 100k)</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button class="btn-main" onclick="executarAnaliseCompleta()">PROCESSAR ANÁLISE MACRO</button>
+      </div>
     </div>
 
-    <script>
-        // Dados dos Indicadores inseridos pelo Utilizador
-        const dadosIndicadores = {
-            inflacao: { nome: 'Inflação CPI', unit: '%', val: 8.5 },
-            juros: { nome: 'Taxa de Juros', unit: '%', val: 12.0 },
-            pib: { nome: 'Crescimento PIB', unit: '%', val: 0.2 },
-            desemprego: { nome: 'Desemprego', unit: '%', val: 9.5 },
-            cambio: { nome: 'Câmbio', unit: '%', val: -12.0 },
-            commodities: { nome: 'Commodities', unit: '%', val: 25.0 },
-            divida: { nome: 'Dívida Pública', unit: '%', val: 88.0 }
-        };
+    <!-- COLUNA DA DIREITA: Diagnósticos, Transmissão e Gráfico -->
+    <div>
+      <!-- Diagnóstico Preditivo Principal -->
+      <div class="prediction-header">
+        <div class="scenario-title" id="previsaoCenario">PROCESSANDO DADOS MACRO...</div>
+        <div class="prediction-text" id="previsaoDescricao">
+          Preencha os indicadores reais ou selecione um cenário rápido para acionar o motor preditivo.
+        </div>
+      </div>
 
-        // Renderiza os cards superiores com os valores
-        function renderizarResumo() {
-            const container = document.getElementById('resumoIndicadores');
-            container.innerHTML = '';
-            Object.keys(dadosIndicadores).forEach(key => {
-                const item = dadosIndicadores[key];
-                container.innerHTML += `
-                    <div class="ind-chip">
-                        <div class="ind-chip-title">${item.nome}</div>
-                        <div class="ind-chip-val">${item.val}${item.unit}</div>
-                    </div>
-                `;
-            });
+      <!-- Transmissão para Mercados & Política do Fed -->
+      <div class="card">
+        <div class="card-title">
+          🏛️ Política do Fed & Transmissão de Mercado
+          <div>
+            <span id="fedBiasTag" class="tag tag-neutral">Dependente de Dados</span>
+            <span id="marketBiasTag" class="tag tag-neutral">Neutro</span>
+          </div>
+        </div>
+        
+        <div class="metric-group fed">
+          <div class="metric-title">Função Reação do Fed & Rumo dos Juros</div>
+          <div id="outFed" class="metric-desc">Analisando sinais...</div>
+        </div>
+
+        <div class="metric-group">
+          <div class="metric-title">Ações, Renda Fixa (Bonds) & Câmbio (USD)</div>
+          <div id="outEquities" class="metric-desc">Analisando sinais...</div>
+        </div>
+
+        <div class="metric-group investor">
+          <div class="metric-title">Estratégia de Alocação de Ativos</div>
+          <div id="outInvestor" class="metric-desc">Analisando sinais...</div>
+        </div>
+      </div>
+
+      <!-- Análise de Contraste (Perdedores vs Ganhadores) -->
+      <div class="contrast-container">
+        <div class="contrast-box negative">
+          <div class="contrast-header">⚠️ Maior Impacto Negativo (Perdedores)</div>
+          <div id="listaNegativos"></div>
+        </div>
+        <div class="contrast-box positive">
+          <div class="contrast-header">🚀 Maior Impacto Positivo (Ganhadores)</div>
+          <div id="listaPositivos"></div>
+        </div>
+      </div>
+
+      <!-- Gráfico de Projeções Preditivas -->
+      <div class="card">
+        <div class="card-title">Projeção Preditiva de Tendência (Próximos 4 Trimestres)</div>
+        <canvas id="chartPredicao"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 1. Inicialização do Gráfico Chart.js
+    const ctx = document.getElementById('chartPredicao').getContext('2d');
+    const grafico = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Atual', 'T+1 Trimestre', 'T+2 Trimestres', 'T+3 Trimestres', 'T+4 Trimestres'],
+        datasets: [
+          { label: 'Lucro Corporativo Projetado', data: [100, 95, 88, 82, 85], borderColor: '#f6465d', borderWidth: 2, fill: false },
+          { label: 'Custo do Crédito / Inadimplência', data: [100, 115, 130, 142, 140], borderColor: '#f0b90b', borderWidth: 2, fill: false },
+          { label: 'Poder de Compra Real', data: [100, 92, 85, 80, 81], borderColor: '#38bdf8', borderWidth: 2, fill: false }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#eaecef' } } },
+        scales: {
+          x: { grid: { color: '#2a3245' }, ticks: { color: '#848e9c' } },
+          y: { grid: { color: '#2a3245' }, ticks: { color: '#848e9c' } }
         }
+      }
+    });
 
-        // Carrega o valor no campo "Insira o valor" ao alterar a seleção
-        function carregarValorParaEdicao() {
-            const key = document.getElementById('selectIndicador').value;
-            document.getElementById('valorInput').value = dadosIndicadores[key].val;
+    function atualizarGraficoProjecao(lucro, credito, poderCompra) {
+      grafico.data.datasets[0].data = lucro;
+      grafico.data.datasets[1].data = credito;
+      grafico.data.datasets[2].data = poderCompra;
+      grafico.update();
+    }
+
+    // 2. Presets de Carregamento Rápido
+    function carregarPreset(nome) {
+      if (nome === 'estagflacao') {
+        document.getElementById('inflacao').value = 8.5;
+        document.getElementById('juros').value = 12.0;
+        document.getElementById('pib').value = 0.2;
+        document.getElementById('desemprego').value = 9.5;
+        document.getElementById('cambio').value = -12.0;
+        document.getElementById('commodities').value = 25.0;
+        document.getElementById('macroRegime').value = 'inflation';
+        document.getElementById('fedTone').value = 'hawkish';
+        document.getElementById('ind_claims').value = 'hot';
+        document.getElementById('ind_nfp').value = 'cool';
+      } else if (nome === 'boom') {
+        document.getElementById('inflacao').value = 2.1;
+        document.getElementById('juros').value = 4.0;
+        document.getElementById('pib').value = 3.5;
+        document.getElementById('desemprego').value = 3.8;
+        document.getElementById('cambio').value = 5.0;
+        document.getElementById('commodities').value = 8.0;
+        document.getElementById('macroRegime').value = 'goldilocks';
+        document.getElementById('fedTone').value = 'neutral';
+        document.getElementById('ind_claims').value = 'cool';
+        document.getElementById('ind_nfp').value = 'hot';
+      } else if (nome === 'recessao') {
+        document.getElementById('inflacao').value = 1.5;
+        document.getElementById('juros').value = 2.5;
+        document.getElementById('pib').value = -1.2;
+        document.getElementById('desemprego').value = 7.0;
+        document.getElementById('cambio').value = -4.0;
+        document.getElementById('commodities').value = -15.0;
+        document.getElementById('macroRegime').value = 'recession';
+        document.getElementById('fedTone').value = 'dovish';
+        document.getElementById('ind_claims').value = 'hot';
+        document.getElementById('ind_nfp').value = 'cool';
+      }
+      executarAnaliseCompleta();
+    }
+
+    // 3. Motor Principal Unificado
+    function executarAnaliseCompleta() {
+      // Captura de Variáveis
+      const inf = parseFloat(document.getElementById('inflacao').value) || 0;
+      const jur = parseFloat(document.getElementById('juros').value) || 0;
+      const pib = parseFloat(document.getElementById('pib').value) || 0;
+      const des = parseFloat(document.getElementById('desemprego').value) || 0;
+      const com = parseFloat(document.getElementById('commodities').value) || 0;
+      
+      const regime = document.getElementById('macroRegime').value;
+      const notes = document.getElementById('humanNotes').value.trim();
+      const claims = document.getElementById('ind_claims').value;
+      const nfp = document.getElementById('ind_nfp').value;
+
+      // Detecção de Conflitos / Intervenção
+      const escalationBox = document.getElementById('escalationBox');
+      const escalationReason = document.getElementById('escalationReason');
+      let needsEscalation = false;
+
+      if (inf > 6.0 && (claims === 'hot' || pib < 1.0)) {
+        needsEscalation = true;
+        escalationReason.innerText = "Risco de Estagflação Detectado! Inflação persistente com desaceleração nos indicadores de atividade. Decisão do analista necessária para ajustar o regime primário.";
+      } else if (nfp === 'hot' && claims === 'hot') {
+        needsEscalation = true;
+        escalationReason.innerText = "Divergência nos Dados de Trabalho! Payrolls fortes com pedidos de auxílio em alta. Verifique revisões de dados.";
+      }
+
+      if (needsEscalation) escalationBox.classList.add('active');
+      else escalationBox.classList.remove('active');
+
+      // Lógica de Transmissão do Fed & Mercado
+      let equitiesText = "", fedText = "", investorText = "";
+      let marketTag = "Neutro", fedTag = "Dependente de Dados";
+
+      if (regime === 'inflation') {
+        if (inf > 5.0 || nfp === 'hot') {
+          marketTag = "Hawkish / Risk-Off";
+          fedTag = "Hawkish / Aperto";
+          equitiesText = "Dados fortes reduzem chances de cortes de juros. Pressão sobre múltiplos P/L de ações de crescimento.";
+          fedText = "Fed prioriza estabilidade de preços. Manutenção de taxas altas por mais tempo ou novas altas.";
+          investorText = "Alocação defensiva: T-bills, caixa e setores resilientes (Saúde, Utilidades).";
+        } else {
+          marketTag = "Bullish / Pivot Rally";
+          fedTag = "Pivot Dovish";
+          equitiesText = "Desinflação abre espaço para flexibilização. Rally em tecnologia e duration longa.";
+          fedText = "Fed se prepara para ciclo de cortes à medida que inflação converge à meta.";
+          investorText = "Aumentar duration em renda fixa (10Y-30Y) e reentrar em ações de crescimento.";
         }
-
-        // Gráfico Preditivo mostrando Mercados Afetados (incluindo Ouro e Brent)
-        const ctx = document.getElementById('chartPredicaoMercados').getContext('2d');
-        const graficoMercados = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Atual (T0)', 'T+1 Trimestre', 'T+2 Trimestres', 'T+3 Trimestres', 'T+4 Trimestres'],
-                datasets: [
-                    { label: 'Ouro (Gold)', data: [100, 112, 125, 138, 142], borderColor: '#f0b90b', borderWidth: 2, fill: false },
-                    { label: 'Petróleo Brent', data: [100, 108, 115, 120, 116], borderColor: '#e67e22', borderWidth: 2, fill: false },
-                    { label: 'Bolsa de Valores', data: [100, 88, 76, 70, 72], borderColor: '#f6465d', borderWidth: 2, fill: false },
-                    { label: 'Mercado Imobiliário', data: [100, 93, 85, 78, 80], borderColor: '#9b59b6', borderWidth: 2, fill: false },
-                    { label: 'Títulos públicos (Renda Fixa)', data: [100, 106, 112, 118, 120], borderColor: '#3498db', borderWidth: 2, fill: false }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { labels: { color: '#eaecef', font: { size: 11 } } } },
-                scales: {
-                    x: { grid: { color: '#2a3245' }, ticks: { color: '#848e9c' } },
-                    y: { grid: { color: '#2a3245' }, ticks: { color: '#848e9c' } }
-                }
-            }
-        });
-
-        // Atualização e Interpretação
-        function atualizarEAnalisar() {
-            const key = document.getElementById('selectIndicador').value;
-            const novoValor = parseFloat(document.getElementById('valorInput').value);
-
-            if (!isNaN(novoValor)) {
-                dadosIndicadores[key].val = novoValor;
-            }
-
-            renderizarResumo();
-            executarAnaliseInterpretativa();
+      } else if (regime === 'recession') {
+        if (pib < 1.0 || claims === 'hot') {
+          marketTag = "Risk-Off Severo";
+          fedTag = "Corte de Emergência";
+          equitiesText = "Queda na expectativa de lucros corporativos impulsiona venda ampla em renda variável.";
+          fedText = "Fed corta juros agressivamente para conter deterioração do mercado de trabalho.";
+          investorText = "Sobreponderar Treasuries de longa duração e Ouro. Reduzir exposição a crédito privado.";
+        } else {
+          marketTag = "Rally de Crescimento";
+          fedTag = "Pausa Neutra";
+          equitiesText = "Resiliência afasta receios de recessão. Ações cíclicas e Small Caps lideram.";
+          fedText = "Fed mantém juros estáveis enquanto monitora a sustentabilidade da atividade.";
+          investorText = "Sobreponderar ações cíclicas e títulos de alto rendimento (High Yield).";
         }
+      } else {
+        marketTag = "Goldilocks / Risk-On";
+        fedTag = "Acomodaticio";
+        equitiesText = "Ambiente ideal: Expansão moderada com inflação sob controle sustenta valor valuation.";
+        fedText = "Fed realiza cortes de 'recalibragem' para manter a economia em equilíbrio.";
+        investorText = "Exposição ampla a índices de ações (S&P 500) e crédito corporativo de alta qualidade.";
+      }
 
-        // Motor Preditivo de Impacto nos Mercados
-        function executarAnaliseInterpretativa() {
-            const inf = dadosIndicadores.inflacao.val;
-            const jur = dadosIndicadores.juros.val;
-            const pib = dadosIndicadores.pib.val;
-            const des = dadosIndicadores.desemprego.val;
-            const com = dadosIndicadores.commodities.val;
+      if (notes.length > 0) {
+        investorText += `<br><br><strong>📌 Nota do Analista:</strong> ${notes}`;
+      }
 
-            const elTitulo = document.getElementById('tituloCenario');
-            const elTexto = document.getElementById('textoInterpretacao');
-            const elNeg = document.getElementById('listaNegativos');
-            const elPos = document.getElementById('listaPositivos');
+      // Atualiza Cards do Fed
+      document.getElementById('outEquities').innerHTML = equitiesText;
+      document.getElementById('outFed').innerHTML = fedText;
+      document.getElementById('outInvestor').innerHTML = investorText;
 
-            let titulo = "";
-            let texto = "";
-            let negativos = [];
-            let positivos = [];
+      document.getElementById('marketBiasTag').className = `tag ${marketTag.includes('Hawkish') || marketTag.includes('Risk-Off') ? 'tag-hawkish' : 'tag-dovish'}`;
+      document.getElementById('marketBiasTag').innerText = marketTag;
 
-            // 1. Cenário de Alta Inflação e PIB fraco (Estagflação / Estresse)
-            if (inf > 6.0 && pib < 1.5) {
-                titulo = "🚨 IMPACTO MACRO: ESTAGFLAÇÃO & PROTEÇÃO EM HARD ASSETS";
-                texto = `Com Inflação em <b>${inf}%</b> e PIB estagnado em <b>${pib}%</b>, os investidores buscam ativos tangíveis de proteção. O <b>Ouro</b> atua como porto seguro e o <b>Petróleo Brent</b> sustenta alta de custos, enquanto a Bolsa e os Imóveis sofrem queda drástica devido ao juro de <b>${jur}%</b>.`;
-                
-                negativos = [
-                    { mercado: "Bolsa de Valores (Ações)", motivo: "Margens corroídas por custos e juros altos", impacto: "Desce 30%" },
-                    { mercado: "Mercado Imobiliário", motivo: "Financiamento habitacional inviável", impacto: "Desce 22%" }
-                ];
-                positivos = [
-                    { mercado: "Ouro (Gold)", motivo: "Busca global por reserva de valor contra inflação", impacto: "Sobe 42%" },
-                    { mercado: "Petróleo Brent", motivo: "Pressão de choques de oferta e custos globais", impacto: "Sobe 20%" },
-                    { mercado: "Títulos / Renda Fixa", motivo: "Captura de juros elevados de " + jur + "%", impacto: "Sobe 20%" }
-                ];
+      document.getElementById('fedBiasTag').className = `tag ${fedTag.includes('Hawkish') || fedTag.includes('Aperto') ? 'tag-hawkish' : 'tag-dovish'}`;
+      document.getElementById('fedBiasTag').innerText = fedTag;
 
-                // Projeção: [Ouro, Brent, Bolsa, Imóveis, Títulos]
-                atualizarGraficoMercados(
-                    [100, 112, 126, 138, 145], // Ouro (Sobe)
-                    [100, 108, 115, 120, 118], // Brent (Sobe)
-                    [100, 88, 76, 70, 72],    // Bolsa (Cai)
-                    [100, 92, 84, 78, 80],    // Imóveis (Cai)
-                    [100, 106, 112, 118, 120]  // Títulos (Sobe)
-                );
-            } 
-            // 2. Cenário de Boom Econômico (Crescimento forte)
-            else if (pib >= 3.0 && inf < 5.0) {
-                titulo = "🚀 IMPACTO MACRO: EXPANSÃO ECONÔMICA & RALLY DE RISCO";
-                texto = `PIB de <b>${pib}%</b> com inflação sob controle impulsiona ativos de crescimento. A <b>Bolsa de Valores</b> e o <b>Mercado Imobiliário</b> lideram os ganhos, enquanto a demanda industrial impulsiona o <b>Petróleo Brent</b>. O <b>Ouro</b> perde atratividade como ativo defensivo.`;
+      // Análise Preditiva & Listas de Contraste (Perdedores vs Ganhadores)
+      const elCenario = document.getElementById('previsaoCenario');
+      const elDesc = document.getElementById('previsaoDescricao');
+      const elNeg = document.getElementById('listaNegativos');
+      const elPos = document.getElementById('listaPositivos');
 
-                negativos = [
-                    { mercado: "Ouro (Gold)", motivo: "Migração de capital para ativos produtivos e de risco", impacto: "Desce 10%" },
-                    { mercado: "Títulos Prefixados Curtos", motivo: "Menor apetite por proteção conservadora", impacto: "Desce 8%" }
-                ];
-                positivos = [
-                    { mercado: "Bolsa de Valores", motivo: "Crescimento nos lucros corporativos", impacto: "Sobe 45%" },
-                    { mercado: "Mercado Imobiliário", motivo: "Crédito acessível e confiança do consumidor", impacto: "Sobe 32%" },
-                    { mercado: "Petróleo Brent", motivo: "Demanda industrial e de transporte aquecida", impacto: "Sobe 18%" }
-                ];
+      let negativos = [], positivos = [];
 
-                atualizarGraficoMercados(
-                    [100, 98, 95, 92, 90],    // Ouro (Cai ligeiramente)
-                    [100, 106, 112, 118, 122], // Brent (Sobe com demanda)
-                    [100, 115, 132, 148, 162], // Bolsa (Dispara)
-                    [100, 108, 118, 128, 135], // Imóveis (Sobe)
-                    [100, 101, 102, 103, 104]  // Títulos (Estável)
-                );
-            } 
-            // 3. Cenário de Recessão / Contração por Juros Altos
-            else if (jur >= 11.0 || pib < 0) {
-                titulo = "📉 IMPACTO MACRO: RECESSÃO & FUGA PARA A SEGURANÇA";
-                texto = `Juros elevados em <b>${jur}%</b> provocam retração da demanda. O <b>Ouro</b> se destaca na busca por proteção, enquanto o <b>Petróleo Brent</b> despenca com o desaquecimento da atividade fabril e do consumo global.`;
+      if (inf > 6.0 && pib < 1.5) {
+        elCenario.innerText = "🚨 PREVISÃO: ESTAGFLAÇÃO E APERTO DE MARGENS";
+        elDesc.innerHTML = `Inflação elevada (<b>${inf}%</b>) combinada com PIB estagnado (<b>${pib}%</b>) corrói o poder de compra e comprime margens corporativas.`;
+        
+        negativos = [
+          { setor: "Construção Civil & Imobiliário", motivo: "Custo de crédito inviabiliza projetos", impacto: "-35%" },
+          { setor: "Varejo Discrecionário", motivo: "Renda consumida por essenciais", impacto: "-28%" },
+          { setor: "Empresas Endividadas", motivo: "Aumento no serviço da dívida", impacto: "-40%" }
+        ];
+        positivos = [
+          { setor: "Renda Fixa Pós-Fixada / T-Bills", motivo: `Aproveita taxa real de ${(jur - inf).toFixed(1)}%`, impacto: "+18%" },
+          { setor: "Exportadores de Commodities", motivo: `Alta global do setor (+${com}%)`, impacto: "+22%" },
+          { setor: "Energia & Utilidades", motivo: "Repasse tarifário e demanda inelástica", impacto: "+12%" }
+        ];
+        atualizarGraficoProjecao([100, 85, 72, 65, 68], [100, 120, 145, 160, 155], [100, 90, 80, 72, 74]);
+      } else if (pib >= 2.5 && inf <= 3.5) {
+        elCenario.innerText = "🚀 PREVISÃO: EXPANSÃO ECONÔMICA (BOOM)";
+        elDesc.innerHTML = `PIB forte (<b>${pib}%</b>) com inflação sob controle (<b>${inf}%</b>) sustenta a expansão dos lucros corporativos.`;
 
-                negativos = [
-                    { mercado: "Petróleo Brent", motivo: "Queda na demanda por energia devido à recessão", impacto: "Desce 25%" },
-                    { mercado: "Bolsa de Valores", motivo: "Queda expressiva nas receitas corporativas", impacto: "Desce 28%" },
-                    { mercado: "Mercado Imobiliário", motivo: "Paralisação das vendas e crédito restrito", impacto: "Desce 18%" }
-                ];
-                positivos = [
-                    { mercado: "Ouro (Gold)", motivo: "Ativo porto seguro durante desaceleração", impacto: "Sobe 30%" },
-                    { mercado: "Títulos Públicos Longos", motivo: "Expectativa de futuros cortes de juros", impacto: "Sobe 22%" }
-                ];
+        negativos = [
+          { setor: "Títulos Públicos de Duração Longa", motivo: "Alta dos juros longos reduz valor facial", impacto: "-12%" },
+          { setor: "Setores Defensivos Tradicionais", motivo: "Migração de capital para crescimento", impacto: "-8%" }
+        ];
+        positivos = [
+          { setor: "Tecnologia & Inovação", motivo: "Expansão de múltiplos e demanda forte", impacto: "+30%" },
+          { setor: "Bens de Consumo Discrecionário", motivo: "Aumento do emprego e renda real", impacto: "+25%" },
+          { setor: "Indústria & Cíclicos", motivo: "Crescimento nos investimentos produtivos", impacto: "+20%" }
+        ];
+        atualizarGraficoProjecao([100, 110, 125, 140, 150], [100, 95, 90, 88, 85], [100, 105, 110, 115, 120]);
+      } else {
+        elCenario.innerText = "📉 PREVISÃO: DESACELERAÇÃO / DESAFIOS CRÉDITO";
+        elDesc.innerHTML = `Cenário de transição com PIB em <b>${pib}%</b>, taxa de juros em <b>${jur}%</b> e desemprego em <b>${des}%</b>.`;
 
-                atualizarGraficoMercados(
-                    [100, 110, 120, 128, 132], // Ouro (Sobe)
-                    [100, 90, 82, 75, 78],     // Brent (Queda forte)
-                    [100, 88, 78, 72, 75],     // Bolsa (Cai)
-                    [100, 94, 88, 82, 85],     // Imóveis (Cai)
-                    [100, 108, 115, 122, 125]  // Títulos (Sobe)
-                );
-            }
-            // 4. Cenário de Transição Neutra
-            else {
-                titulo = "⚖️ IMPACTO MACRO: EQUILÍBRIO & TRANSIÇÃO DE CICLO";
-                texto = `Com a Inflação em <b>${inf}%</b> e Juros em <b>${jur}%</b>, os mercados operam com volatilidade reduzida. O <b>Ouro</b> e o <b>Petróleo Brent</b> mantêm preços estáveis acompanhando o ritmo das commodities em <b>${com}%</b>.`;
+        negativos = [
+          { setor: "Crédito de Baixa Qualidade (High Yield)", motivo: "Aumento do risco de inadimplência", impacto: "-20%" },
+          { setor: "Bancos Regionais", motivo: "Compressão da margem financeira líquida", impacto: "-15%" }
+        ];
+        positivos = [
+          { setor: "Títulos Públicos Soberanos", motivo: "Busca por segurança (Flight to quality)", impacto: "+15%" },
+          { setor: "Empresas com Alto Caixa Livre", motivo: "Independência de financiamento externo", impacto: "+10%" }
+        ];
+        atualizarGraficoProjecao([100, 92, 85, 80, 82], [100, 110, 120, 125, 120], [100, 98, 95, 92, 93]);
+      }
 
-                negativos = [
-                    { mercado: "Bolsa de Valores (Ações High-Beta)", motivo: "Atividade econômica sem grandes gatilhos", impacto: "Desce 5%" }
-                ];
-                positivos = [
-                    { mercado: "Ouro (Gold)", motivo: "Manutenção de patrimônio contra inflação residual", impacto: "Sobe 8%" },
-                    { mercado: "Títulos / Renda Fixa", motivo: "Rendimento atrativo com juros reais moderados", impacto: "Sobe 10%" }
-                ];
+      // Renderiza Listas de Contraste
+      elNeg.innerHTML = negativos.map(item => `
+        <div class="impact-item">
+          <div><strong>${item.setor}</strong><br><span style="color:var(--text-muted);font-size:0.75rem;">${item.motivo}</span></div>
+          <span class="impact-badge badge-red">${item.impacto}</span>
+        </div>
+      `).join('');
 
-                atualizarGraficoMercados(
-                    [100, 102, 105, 107, 108], // Ouro
-                    [100, 101, 103, 104, 105], // Brent
-                    [100, 102, 104, 106, 108], // Bolsa
-                    [100, 101, 102, 103, 104], // Imóveis
-                    [100, 103, 105, 108, 110]  // Títulos
-                );
-            }
+      elPos.innerHTML = positivos.map(item => `
+        <div class="impact-item">
+          <div><strong>${item.setor}</strong><br><span style="color:var(--text-muted);font-size:0.75rem;">${item.motivo}</span></div>
+          <span class="impact-badge badge-green">${item.impacto}</span>
+        </div>
+      `).join('');
+    }
 
-            elTitulo.innerText = titulo;
-            elTexto.innerHTML = texto;
-
-            // Renderizar Lista do Contraste
-            elNeg.innerHTML = negativos.map(item => `
-                <div class="impact-item">
-                    <div><b>${item.mercado}</b><div style="color:var(--text-muted); font-size:10px;">${item.motivo}</div></div>
-                    <span class="impact-badge badge-red">${item.impacto}</span>
-                </div>
-            `).join('');
-
-            elPos.innerHTML = positivos.map(item => `
-                <div class="impact-item">
-                    <div><b>${item.mercado}</b><div style="color:var(--text-muted); font-size:10px;">${item.motivo}</div></div>
-                    <span class="impact-badge badge-green">${item.impacto}</span>
-                </div>
-            `).join('');
-        }
-
-        // Função que atualiza o gráfico com as trajetórias dos 5 mercados
-        function atualizarGraficoMercados(ouro, brent, bolsa, imoveis, titulos) {
-            graficoMercados.data.datasets[0].data = ouro;
-            graficoMercados.data.datasets[1].data = brent;
-            graficoMercados.data.datasets[2].data = bolsa;
-            graficoMercados.data.datasets[3].data = imoveis;
-            graficoMercados.data.datasets[4].data = titulos;
-            graficoMercados.update();
-        }
-
-        // Inicialização
-        carregarValorParaEdicao();
-        renderizarResumo();
-        executarAnaliseInterpretativa();
-    </script>
+    // Inicialização
+    executarAnaliseCompleta();
+  </script>
 </body>
 </html>
