@@ -3,181 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gráfico Produção vs Demanda</title>
-    <!-- Importando a biblioteca Chart.js via CDN -->
+    <title>Interpretador Econômico & Exchange</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --bg-main: #0b0e11;
+            --bg-card: #1e2329;
+            --bg-input: #2b313a;
+            --text-main: #eaecef;
+            --text-muted: #848e9c;
+            --green: #0ecb81;
+            --red: #f6465d;
+            --yellow: #f0b90b;
+            --blue: #3498db;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            text-align: center;
+            font-family: 'Segoe UI', Inter, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
             padding: 20px;
         }
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h2 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-        .inputs {
+
+        .header {
             display: flex;
-            justify-content: center;
-            gap: 20px;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2b313a;
+            padding-bottom: 15px;
             margin-bottom: 20px;
         }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
+
+        .logo { font-size: 20px; font-weight: bold; color: var(--yellow); }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
+
+        .metric-card {
+            background-color: var(--bg-card);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #2b313a;
         }
-        input {
+
+        .metric-title { font-size: 11px; color: var(--text-muted); }
+        .metric-value { font-size: 20px; font-weight: bold; margin: 6px 0; }
+        .metric-status { font-size: 11px; font-weight: bold; }
+
+        .up { color: var(--green); }
+        .down { color: var(--red); }
+        .neutral { color: var(--yellow); }
+
+        .grid-main {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #2b313a;
+            margin-bottom: 20px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; color: var(--text-muted); font-size: 12px; margin-bottom: 5px; }
+
+        input, select {
+            width: 100%;
             padding: 10px;
-            font-size: 16px;
-            width: 120px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            background: var(--bg-input);
+            border: 1px solid #474d57;
+            border-radius: 4px;
+            color: var(--text-main);
+            box-sizing: border-box;
+            font-size: 14px;
         }
+
         button {
-            padding: 12px 24px;
-            font-size: 16px;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--yellow);
+            color: #000;
             font-weight: bold;
-            color: #fff;
-            background-color: #3498db;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: 0.2s;
         }
-        button:hover {
-            background-color: #2980b9;
+
+        button:hover { opacity: 0.9; }
+
+        /* Painel do Interpretador */
+        .interpreter-box {
+            background: rgba(52, 152, 219, 0.08);
+            border: 1px solid var(--blue);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
         }
-        .status {
-            margin-top: 15px;
+
+        .interpreter-title {
+            color: var(--blue);
+            font-size: 14px;
             font-weight: bold;
-            color: #e74c3c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
         }
-        canvas {
-            margin-top: 30px;
+
+        .interpreter-content {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-main);
         }
+
+        .tag-scenario {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .selector-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid #2b313a;
+            color: var(--text-muted);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .tab.active { background: var(--yellow); color: #000; font-weight: bold; }
+
+        canvas { width: 100% !important; height: 320px !important; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Indicador de Mercado</h2>
-        <p>Insira os valores. O gráfico reflete o impacto (Ex: Preço/Escassez).</p>
-        
-        <div class="inputs">
+    <div class="header">
+        <div class="logo">🧠 MACRO-INTERPRETER ENGINE</div>
+        <div style="color: var(--text-muted); font-size: 13px;">Interpretador de Dados e Indicadores Econômicos</div>
+    </div>
+
+    <!-- Indicadores Principais -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-title">INFLAÇÃO (IPCA/CPI)</div>
+            <div class="metric-value" id="val-inflacao">3.00%</div>
+            <div class="metric-status neutral" id="st-inflacao">Estável</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">TAXA DE JUROS (SELIC/FED)</div>
+            <div class="metric-value" id="val-juros">5.00%</div>
+            <div class="metric-status neutral" id="st-juros">Estável</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">PIB REAL (GDP)</div>
+            <div class="metric-value" id="val-pib">$1,000</div>
+            <div class="metric-status neutral" id="st-pib">Estável</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">MOEDA BASE (DÓLAR/INDEX)</div>
+            <div class="metric-value" id="val-moeda">100.00</div>
+            <div class="metric-status neutral" id="st-moeda">Estável</div>
+        </div>
+    </div>
+
+    <div class="grid-main">
+        <!-- Entrada de Dados -->
+        <div class="card">
+            <h3 style="margin-top:0; font-size: 15px;">Inserir Novos Dados</h3>
             <div class="input-group">
-                <label for="producao">Produção:</label>
-                <input type="number" id="producao" value="0" min="0">
+                <label>PRODUÇÃO TOTAL (Oferta)</label>
+                <input type="number" id="producao" value="100">
             </div>
             <div class="input-group">
-                <label for="demanda">Demanda:</label>
-                <input type="number" id="demanda" value="0" min="0">
+                <label>DEMANDA TOTAL (Consumo)</label>
+                <input type="number" id="demanda" value="100">
             </div>
+            <div class="input-group">
+                <label>CHOQUE EXTERNO DE MERCADO</label>
+                <select id="choque">
+                    <none>
+                    <option value="nenhum">Nenhum (Evolução Normal)</option>
+                    <option value="crise_oferta">Escassez / Guerra de Insumos (-Produção)</option>
+                    <option value="estimulo">Estímulo Monetário / Subsídios (+Demanda)</option>
+                </select>
+            </div>
+            <button onclick="processarEInterpretar()">PROCESSAR & INTERPRETAR</button>
         </div>
 
-        <button onclick="atualizarGrafico()">Adicionar ao Gráfico</button>
-        <div id="mensagem" class="status"></div>
+        <!-- Painel Central: Interpretador + Gráfico -->
+        <div>
+            <!-- INTERPRETADOR AUTOMÁTICO DE DADOS -->
+            <div class="interpreter-box">
+                <div class="interpreter-title">
+                    🔍 DIAGNÓSTICO DO INTERPRETADOR
+                </div>
+                <div id="tag-cenario" class="tag-scenario" style="background: rgba(240,185,11,0.2); color: var(--yellow);">
+                    CENÁRIO: EQUILÍBRIO INICIAL
+                </div>
+                <div class="interpreter-content" id="texto-interpretacao">
+                    A economia encontra-se em ponto de neutralidade. A capacidade de produção supre integralmente a demanda do mercado, mantendo a inflação controlada e as taxas de juros estáveis.
+                </div>
+            </div>
 
-        <!-- Área onde o gráfico será renderizado -->
-        <canvas id="graficoMercado"></canvas>
+            <!-- Gráfico VisuaL -->
+            <div class="card">
+                <div class="selector-tabs">
+                    <button class="tab active" onclick="selecionarIndicador('inflacao', this)">Inflação</button>
+                    <button class="tab" onclick="selecionarIndicador('juros', this)">Taxa de Juros</button>
+                    <button class="tab" onclick="selecionarIndicador('pib', this)">PIB (GDP)</button>
+                    <button class="tab" onclick="selecionarIndicador('moeda', this)">Moeda Base</button>
+                </div>
+                <canvas id="chartExchange"></canvas>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Configurações Iniciais
-        let valorAtual = 100; // Valor inicial de partida da linha do gráfico
-        let iteracao = 0;
-        
-        // Arrays que guardam os dados para desenhar o gráfico
-        const historicoValores = [valorAtual]; 
-        const labels = ['Início'];
+        const dadosEconomicos = { inflacao: [3.0], juros: [5.0], pib: [1000], moeda: [100.0] };
+        const labels = ['T0'];
+        let turnos = 0;
 
-        // Configuração do Chart.js
-        const ctx = document.getElementById('graficoMercado').getContext('2d');
+        const ctx = document.getElementById('chartExchange').getContext('2d');
         const grafico = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Tendência (Sobe/Desce/Mantém)',
-                    data: historicoValores,
-                    borderColor: '#2ecc71',
-                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#27ae60',
-                    pointRadius: 5,
-                    fill: true,
-                    tension: 0.3 // Deixa a linha levemente arredondada
+                    label: 'Inflação (%)',
+                    data: dadosEconomicos.inflacao,
+                    borderColor: '#f0b90b',
+                    backgroundColor: 'rgba(240, 185, 11, 0.1)',
+                    borderWidth: 2, fill: true, tension: 0.2
                 }]
             },
             options: {
                 responsive: true,
+                plugins: { legend: { labels: { color: '#eaecef' } } },
                 scales: {
-                    y: {
-                        suggestedMin: 0,
-                        suggestedMax: 200
-                    }
+                    x: { grid: { color: '#2b313a' }, ticks: { color: '#848e9c' } },
+                    y: { grid: { color: '#2b313a' }, ticks: { color: '#848e9c' } }
                 }
             }
         });
 
-        // Função que é chamada ao clicar no botão
-        function atualizarGrafico() {
-            // Pega os valores digitados (converte para número)
-            const producao = parseFloat(document.getElementById('producao').value) || 0;
-            const demanda = parseFloat(document.getElementById('demanda').value) || 0;
-            const mensagem = document.getElementById('mensagem');
+        function processarEInterpretar() {
+            let prod = parseFloat(document.getElementById('producao').value) || 0;
+            let dem = parseFloat(document.getElementById('demanda').value) || 0;
+            const choque = document.getElementById('choque').value;
 
-            // Lógica principal pedida:
-            if (producao > demanda) {
-                // Se produção for maior, desce (baseado na diferença)
-                valorAtual += (demanda - producao); 
-                mensagem.style.color = '#e74c3c'; // Vermelho
-                mensagem.innerText = `Produção maior que Demanda. O gráfico desceu!`;
+            // Aplicação de Choques Extracurriculares
+            if (choque === 'crise_oferta') prod *= 0.7;
+            if (choque === 'estimulo') dem *= 1.4;
+
+            let ultInf = dadosEconomicos.inflacao[dadosEconomicos.inflacao.length - 1];
+            let ultJur = dadosEconomicos.juros[dadosEconomicos.juros.length - 1];
+            let ultPib = dadosEconomicos.pib[dadosEconomicos.pib.length - 1];
+            let ultMoe = dadosEconomicos.moeda[dadosEconomicos.moeda.length - 1];
+
+            const gap = dem - prod;
+
+            // Cálculos Macroeconômicos
+            let novaInf = Math.max(0, ultInf + (gap * 0.05));
+            let novoJur = Math.max(0.5, ultJur + (novaInf > 4.0 ? 0.35 : -0.2));
+            let novoPib = Math.max(100, ultPib + (dem * 0.7) - (prod > dem ? (prod - dem) * 0.6 : 0));
+            let novaMoe = Math.max(10, ultMoe + (novoJur * 0.4) - (novaInf * 0.3) + (gap * 0.01));
+
+            // Atualização do Histórico
+            dadosEconomicos.inflacao.push(parseFloat(novaInf.toFixed(2)));
+            dadosEconomicos.juros.push(parseFloat(novoJur.toFixed(2)));
+            dadosEconomicos.pib.push(parseFloat(novoPib.toFixed(2)));
+            dadosEconomicos.moeda.push(parseFloat(novaMoe.toFixed(2)));
+
+            turnos++;
+            labels.push('T' + turnos);
+
+            atualizarCards(novaInf, ultInf, novoJur, ultJur, novoPib, ultPib, novaMoe, ultMoe);
+            
+            // EXECUÇÃO DA INTERPRETAÇÃO
+            gerarInterpretacao(prod, dem, novaInf, ultInf, novoJur, ultJur, novoPib, ultPib, novaMoe, ultMoe);
+            
+            grafico.update();
+        }
+
+        // MOTOR INTERPRETATIVO DE DADOS
+        function gerarInterpretacao(prod, dem, inf, ultInf, jur, ultJur, pib, ultPib, moe, ultMoe) {
+            const elTexto = document.getElementById('texto-interpretacao');
+            const elTag = document.getElementById('tag-cenario');
+
+            let diagnostico = "";
+            let cenario = "";
+            let corBg = "";
+            let corTexto = "";
+
+            if (dem > prod) {
+                const escassez = ((dem - prod) / prod * 100).toFixed(1);
+                if (inf > ultInf && jur > ultJur) {
+                    cenario = "CENÁRIO: SOBREAQUECIMENTO E ESPIRAL INFLACIONÁRIA";
+                    corBg = "rgba(246, 70, 93, 0.2)"; corTexto = "#f6465d";
+                    diagnostico = `A demanda supera a produção em <b>${escassez}%</b>. Isso gerou escassez de produtos e fez a <b>Inflação subir para ${inf.toFixed(2)}%</b>. Em resposta, a autoridade monetária eleva a <b>Taxa de Juros para ${jur.toFixed(2)}%</b> na tentativa de frear o consumo. A moeda atrai capital e se valoriza para <b>${moe.toFixed(2)}</b>.`;
+                } else {
+                    cenario = "CENÁRIO: PRESSÃO DE DEMANDA / CRESCIMENTO ACELERADO";
+                    corBg = "rgba(240, 185, 11, 0.2)"; corTexto = "#f0b90b";
+                    diagnostico = `A demanda está aquecida em relação à produção. O PIB expandiu para <b>$${pib.toFixed(0)}</b> impulsionado pelo consumo, porém a capacidade produtiva está próxima do limite, o que pode gerar alta nos preços nos próximos turnos.`;
+                }
             } 
-            else if (producao < demanda) {
-                // Se produção for menor, sobe (baseado na diferença)
-                valorAtual += (demanda - producao); 
-                mensagem.style.color = '#2ecc71'; // Verde
-                mensagem.innerText = `Demanda maior que Produção. O gráfico subiu!`;
+            else if (prod > dem) {
+                const excesso = ((prod - dem) / dem * 100).toFixed(1);
+                if (pib < ultPib) {
+                    cenario = "CENÁRIO: DESACELERAÇÃO / RECESSÃO TÉCNICA";
+                    corBg = "rgba(246, 70, 93, 0.2)"; corTexto = "#f6465d";
+                    diagnostico = `Há um excesso de produção de <b>${excesso}%</b> que não está sendo absorvido pelo mercado. Os estoques estão encalhados e o <b>PIB caiu para $${pib.toFixed(0)}</b>. A baixa demanda força a inflação para baixo (${inf.toFixed(2)}%), exigindo um corte futuro nas taxas de juros para reestimular a economia.`;
+                } else {
+                    cenario = "CENÁRIO: DEFLAÇÃO E EXCESSO DE OFERTA";
+                    corBg = "rgba(52, 152, 219, 0.2)"; corTexto = "#3498db";
+                    diagnostico = `A produção superou o consumo. Para queimar estoques, os preços caem, reduzindo a Inflação para <b>${inf.toFixed(2)}%</b>. O cenário beneficia os consumidores no curto prazo, mas reduz as margens das indústrias.`;
+                }
             } 
             else {
-                // Se forem iguais, mantém (diferença é 0)
-                mensagem.style.color = '#f39c12'; // Laranja
-                mensagem.innerText = `Produção igual à Demanda. O gráfico se manteve!`;
+                cenario = "CENÁRIO: EQUILÍBRIO MACROECONÔMICO Perfeito";
+                corBg = "rgba(14, 203, 129, 0.2)"; corTexto = "#0ecb81";
+                diagnostico = `Oferta e Demanda estão perfeitamente ajustadas em <b>${prod} unidades</b>. Todas as variáveis permanecem em trajetória estável. Não há forças gerando pressões inflacionárias ou recessivas.`;
             }
 
-            // Atualiza os arrays com o novo valor
-            iteracao++;
-            labels.push('Turno ' + iteracao);
-            historicoValores.push(valorAtual);
+            elTag.innerText = cenario;
+            elTag.style.background = corBg;
+            elTag.style.color = corTexto;
+            elTexto.innerHTML = diagnostico;
+        }
 
-            // Muda a cor da linha baseado na última ação (verde se subir, vermelho se descer)
-            if (producao > demanda) {
-                grafico.data.datasets[0].borderColor = '#e74c3c';
-                grafico.data.datasets[0].backgroundColor = 'rgba(231, 76, 60, 0.2)';
-            } else if (producao < demanda) {
-                grafico.data.datasets[0].borderColor = '#2ecc71';
-                grafico.data.datasets[0].backgroundColor = 'rgba(46, 204, 113, 0.2)';
-            } else {
-                grafico.data.datasets[0].borderColor = '#f39c12';
-                grafico.data.datasets[0].backgroundColor = 'rgba(243, 156, 18, 0.2)';
-            }
+        function atualizarCards(inf, ultInf, jur, ultJur, pib, ultPib, moe, ultMoe) {
+            document.getElementById('val-inflacao').innerText = inf.toFixed(2) + '%';
+            setCssStatus('st-inflacao', inf, ultInf);
 
-            // Manda o Chart.js atualizar o desenho na tela
+            document.getElementById('val-juros').innerText = jur.toFixed(2) + '%';
+            setCssStatus('st-juros', jur, ultJur);
+
+            document.getElementById('val-pib').innerText = '$' + pib.toFixed(0);
+            setCssStatus('st-pib', pib, ultPib);
+
+            document.getElementById('val-moeda').innerText = moe.toFixed(2);
+            setCssStatus('st-moeda', moe, ultMoe);
+        }
+
+        function setCssStatus(elemId, atual, anterior) {
+            const el = document.getElementById(elemId);
+            if (atual > anterior) { el.innerText = '▲ Subiu'; el.className = 'metric-status up'; }
+            else if (atual < anterior) { el.innerText = '▼ Desceu'; el.className = 'metric-status down'; }
+            else { el.innerText = '= Mantido'; el.className = 'metric-status neutral'; }
+        }
+
+        function selecionarIndicador(indicador, btn) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            const nomes = { inflacao: 'Inflação (%)', juros: 'Taxa de Juros (%)', pib: 'PIB Real ($)', moeda: 'Moeda Base Index' };
+            const cores = { inflacao: '#f6465d', juros: '#f0b90b', pib: '#0ecb81', moeda: '#3498db' };
+            grafico.data.datasets[0].label = nomes[indicador];
+            grafico.data.datasets[0].data = dadosEconomicos[indicador];
+            grafico.data.datasets[0].borderColor = cores[indicador];
+            grafico.data.datasets[0].backgroundColor = cores[indicador] + '20';
             grafico.update();
         }
     </script>
